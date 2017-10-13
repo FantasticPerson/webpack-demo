@@ -1,8 +1,11 @@
 const path = require('path');
+const glob=require('glob');
+const webpack = require('webpack')
 const uglify = require('uglifyjs-webpack-plugin')
 const htmlPlugin = require('html-webpack-plugin')
 const extractTextPlugin = require('extract-text-webpack-plugin')
-
+const purifycssPlugin = require('purifycss-webpack');
+const purifycss = require('purify-css')
 
 var website = {
     publicPath:"http://10.10.61.115:8081/"
@@ -32,7 +35,10 @@ module.exports={
 
                 use:extractTextPlugin.extract({
                     fallback:"style-loader",
-                    use:"css-loader"
+                    use:[
+                        {loader:"css-loader",options:{importloaders:1}},
+                        'postcss-loader'
+                    ]
                 })
                 //include:
                 //exclude
@@ -89,7 +95,10 @@ module.exports={
             hash:true,
             template:'./src/index.html'
         }),
-        new extractTextPlugin("css/index2.css")
+        new extractTextPlugin("css/index2.css"),
+        new purifycssPlugin({
+            paths:glob.sync(path.join(__dirname,"src/*.html"))
+        })
     ],
     devServer:{
         contentBase:path.resolve(__dirname,'dist'),
